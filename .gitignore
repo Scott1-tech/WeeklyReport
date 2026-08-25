@@ -1,0 +1,18 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# env files (may contain the Google service account private key)
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# vercel
+.vercel
