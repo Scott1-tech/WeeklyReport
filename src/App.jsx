@@ -1,5 +1,6 @@
 import FleetPulseDashboard from './components/FleetPulseDashboard';
 import SyncStatusBanner from './components/SyncStatusBanner';
+import ImportPanel from './components/ImportPanel';
 import { useFleetData } from './hooks/useFleetData';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         followLink={followLink}
       />
       <SyncStatusBanner status={status} error={error} lastSynced={lastSynced} onRetry={refresh} />
+      <ImportPanel onImported={refresh} />
     </>
   );
 }
