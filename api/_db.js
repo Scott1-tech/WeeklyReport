@@ -22,7 +22,13 @@ export function getPool() {
       // Neon / most hosted free-tier Postgres providers require SSL and use
       // certificates that aren't in Node's default trust store.
       ssl: { rejectUnauthorized: false },
-      max: 3,
+      // Each API route is its own serverless function with its own pool, and
+      // a free-tier Postgres has a small total connection cap — keep each
+      // pool's footprint minimal so five routes' worth of pools can't exhaust
+      // it between them. (If DATABASE_URL is the *unpooled* Neon connection
+      // string rather than the "-pooler" one, this cap is easy to hit even
+      // at max:1 per route under bursty traffic — see DEPLOY.md.)
+      max: 1,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 10000
     });
