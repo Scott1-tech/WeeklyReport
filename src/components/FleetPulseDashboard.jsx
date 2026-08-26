@@ -1866,7 +1866,7 @@ function FleetPulseDashboard({
 
   const handleDeleteItem = () => {
     if (modalState.index_ !== null) {
-      deleteItem(modalState.index_);
+      deleteItem(modalState.index_, modalState.item?.entityType);
       addToast('Row successfully deleted from sheet', 'info');
     }
     setModalState({ isOpen: false, type: null, item: null, index_: null });
@@ -2091,21 +2091,27 @@ function FleetPulseDashboard({
                     <div className="space-y-2">
                       <div>
                         <label className="text-[10px] text-slate-500 block mb-0.5">From Date</label>
-                        <input
-                          type="date"
-                          value={customStartDate}
-                          onChange={(e) => setCustomStartDate(e.target.value)}
-                          className="w-full text-xs p-1.5 border border-stone-300 rounded-lg"
-                        />
+                        <div className="relative">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <input
+                            type="date"
+                            value={customStartDate}
+                            onChange={(e) => setCustomStartDate(e.target.value)}
+                            className="w-full text-xs pl-8 pr-2 py-1.5 border border-stone-300 rounded-lg bg-white transition-colors hover:border-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 [color-scheme:light]"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="text-[10px] text-slate-500 block mb-0.5">To Date</label>
-                        <input
-                          type="date"
-                          value={customEndDate}
-                          onChange={(e) => setCustomEndDate(e.target.value)}
-                          className="w-full text-xs p-1.5 border border-stone-300 rounded-lg"
-                        />
+                        <div className="relative">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <input
+                            type="date"
+                            value={customEndDate}
+                            onChange={(e) => setCustomEndDate(e.target.value)}
+                            className="w-full text-xs pl-8 pr-2 py-1.5 border border-stone-300 rounded-lg bg-white transition-colors hover:border-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 [color-scheme:light]"
+                          />
+                        </div>
                       </div>
                       <button
                         onClick={() => {
@@ -3875,7 +3881,7 @@ function FleetPulseDashboard({
                                   setModalState({
                                     isOpen: true,
                                     type: 'deleteConfirm',
-                                    item: { title: `driver "${d.name || 'Unnamed'}"` },
+                                    item: { title: `driver "${d.name || 'Unnamed'}"`, entityType: 'driver' },
                                     index_: d.index_
                                   })
                                 }
@@ -4083,7 +4089,7 @@ function FleetPulseDashboard({
                                   setModalState({
                                     isOpen: true,
                                     type: 'deleteConfirm',
-                                    item: { title: `truck unit "${t.unit || 'Unnamed'}"` },
+                                    item: { title: `truck unit "${t.unit || 'Unnamed'}"`, entityType: 'truck' },
                                     index_: t.index_
                                   })
                                 }
@@ -4396,24 +4402,30 @@ function FleetPulseDashboard({
 
                   <div>
                     <label className="font-semibold text-slate-700 block mb-1">Hire Date</label>
-                    <input
-                      type="date"
-                      required
-                      name="hireDate"
-                      defaultValue={modalState.item?.hireDate || TODAY_STR}
-                      className="w-full p-2 border border-stone-300 rounded-xl"
-                    />
+                    <div className="relative">
+                      <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="date"
+                        required
+                        name="hireDate"
+                        defaultValue={modalState.item?.hireDate || TODAY_STR}
+                        className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-xl bg-white text-slate-900 shadow-2xs transition-colors hover:border-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 [color-scheme:light]"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">Termination Date (if inactive)</label>
-                  <input
-                    type="date"
-                    name="termDate"
-                    defaultValue={modalState.item?.termDate || ''}
-                    className="w-full p-2 border border-stone-300 rounded-xl"
-                  />
+                  <div className="relative">
+                    <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="date"
+                      name="termDate"
+                      defaultValue={modalState.item?.termDate || ''}
+                      className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-xl bg-white text-slate-900 shadow-2xs transition-colors hover:border-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 [color-scheme:light]"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -4503,12 +4515,15 @@ function FleetPulseDashboard({
 
                   <div>
                     <label className="font-semibold text-slate-700 block mb-1">Status Date</label>
-                    <input
-                      type="date"
-                      name="statusDate"
-                      defaultValue={modalState.item?.statusDate || TODAY_STR}
-                      className="w-full p-2 border border-stone-300 rounded-xl"
-                    />
+                    <div className="relative">
+                      <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="date"
+                        name="statusDate"
+                        defaultValue={modalState.item?.statusDate || TODAY_STR}
+                        className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-xl bg-white text-slate-900 shadow-2xs transition-colors hover:border-slate-400 focus:outline-hidden focus:border-purple-500 focus:ring-2 focus:ring-purple-500/25 [color-scheme:light]"
+                      />
+                    </div>
                   </div>
                 </div>
 
