@@ -50,16 +50,31 @@ export function useFleetData() {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
     try {
-      const [driversRes, trucksRes] = await Promise.all([
+      // allSettled, not all: if one endpoint is having a bad moment, that
+      // shouldn't blank out data the other endpoint successfully returned.
+      const [driversResult, trucksResult] = await Promise.allSettled([
         fetchJson('/api/drivers'),
         fetchJson('/api/trucks')
       ]);
-      const { rows, indexMap } = driversAndTrucksToRows(driversRes.drivers || [], trucksRes.trucks || []);
+
+      const errors = [];
+      if (driversResult.status === 'rejected') errors.push(driversResult.reason.message);
+      if (trucksResult.status === 'rejected') errors.push(trucksResult.reason.message);
+
+      const drivers = driversResult.status === 'fulfilled' ? driversResult.value.drivers || [] : [];
+      const trucks = trucksResult.status === 'fulfilled' ? trucksResult.value.trucks || [] : [];
+      const { rows, indexMap } = driversAndTrucksToRows(drivers, trucks);
       indexMapRef.current = indexMap;
       setData(rows);
-      setStatus('ready');
-      setError(null);
-      setLastSynced(new Date());
+
+      if (errors.length > 0) {
+        setStatus('error');
+        setError(errors.join(' | '));
+      } else {
+        setStatus('ready');
+        setError(null);
+        setLastSynced(new Date());
+      }
     } catch (err) {
       console.error('[useFleetData] refresh failed', err);
       setError(err.message);
