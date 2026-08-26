@@ -100,20 +100,31 @@ export function useFleetData() {
 
     for (const op of ops) {
       if (op.kind === 'delete') {
-        const entity = indexMap.get(op.index_);
-        if (!entity) continue;
-        requests.push(fetchJson(`/api/${entity.type}s/${entity.id}`, { method: 'DELETE' }));
+        const entry = op.index_ !== undefined && op.index_ !== null ? indexMap.get(op.index_) : null;
+        if (!entry) continue;
+        // A shared index_ can hold a driver AND a truck at once (see
+        // src/lib/rowShape.js), so a bare index alone can't say which one to
+        // delete. handleDeleteItem passes an entityType hint derived from
+        // which tab the delete was initiated from; without one, fall back to
+        // whichever single type is actually present.
+        const type = op.entityType && entry[op.entityType] ? op.entityType : entry.driver ? 'driver' : entry.truck ? 'truck' : null;
+        if (!type) continue;
+        requests.push(fetchJson(`/api/${type}s/${entry[type].id}`, { method: 'DELETE' }));
         continue;
       }
 
-      // update / insert (insert with an index_ already present is an upsert —
-      // see the module comment above and src/lib/rowShape.js).
+      // update / insert — treated identically here. The dashboard's own
+      // "shift rows down" logic (handleSaveDriver/handleSaveTruck) issues a
+      // mix of both while it doesn't actually know whether a given target
+      // row already holds an entity of this type; what matters is only
+      // whether OUR index_->entity map has one there right now.
       const entityType = classifyPatch(op.patch);
       if (!entityType) continue; // weekly/report columns — the dashboard recomputes these live, nothing to persist
 
-      const existing = op.index_ !== undefined && op.index_ !== null ? indexMap.get(op.index_) : null;
+      const entry = op.index_ !== undefined && op.index_ !== null ? indexMap.get(op.index_) : null;
+      const existing = entry?.[entityType];
 
-      if (existing && existing.type === entityType) {
+      if (existing) {
         const fields = entityType === 'driver' ? driverPatchToFields(op.patch) : truckPatchToFields(op.patch);
         if (Object.keys(fields).length === 0) continue;
         requests.push(
@@ -123,7 +134,13 @@ export function useFleetData() {
             body: JSON.stringify(fields)
           })
         );
-      } else if (op.kind === 'insert') {
+      } else {
+        // No entity of this type at this index — whether the slot is truly
+        // blank or just occupied by the OTHER entity type, writing these
+        // columns there means "this row now has a driver/truck," matching
+        // what it would mean on the original spreadsheet. That holds
+        // regardless of whether the dashboard labeled the call update or
+        // insert — it doesn't reliably know which one applies either.
         const fields = entityType === 'driver' ? driverPatchToFields(op.patch) : truckPatchToFields(op.patch);
         const meaningful = entityType === 'driver' ? hasMeaningfulDriverFields(fields) : hasMeaningfulTruckFields(fields);
         if (!meaningful) continue; // blank buffer rows etc. — a real database doesn't need row padding
@@ -135,7 +152,6 @@ export function useFleetData() {
           })
         );
       }
-      // update targeting an index_ with no matching entity: nothing to do safely, skip.
     }
 
     if (requests.length === 0) return;
@@ -177,8 +193,8 @@ export function useFleetData() {
   );
 
   const deleteItem = useCallback(
-    (index_) => {
-      enqueue({ kind: 'delete', index_ });
+    (index_, entityType) => {
+      enqueue({ kind: 'delete', index_, entityType });
     },
     [enqueue]
   );

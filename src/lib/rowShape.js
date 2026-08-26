@@ -54,40 +54,65 @@ const TRUCK_FIELD_BY_COL = {
 // date/number column with an empty string).
 const NULLABLE_TYPED_FIELDS = new Set(['hire_date', 'term_date', 'status_date', 'tenure_days']);
 
+// The dashboard's own "add at the top, shift everything else down one slot"
+// logic (see handleSaveDriver/handleSaveTruck) assumes drivers and trucks
+// share ONE row-number space — exactly like the original spreadsheet, where
+// a single physical row could carry driver columns (A-G), truck columns
+// (H-M), both, or neither, and "row 6" means the same thing for both. Pairing
+// driver[i] and truck[i] under the same index_ here reproduces that, so both
+// entity types' shift logic lands on the row numbers it expects instead of
+// on a row that turns out to belong to the other entity type.
+//
+// A few leading blank rows mirror the real sheet's title rows, so the
+// dashboard's own header-row auto-detection (which falls back to skipping
+// index 2 when it can't find literal "Driver Name" / "Unit" header text)
+// never skips real data.
+const LEADING_BLANK_ROWS = 5;
+
 // Build the flat {index_, row} envelope array the dashboard expects, from real
-// driver/truck rows. Drivers occupy the first block of indices, trucks follow —
-// each envelope only has its own column range populated, exactly like the
-// original spreadsheet extraction loop expects.
+// driver/truck rows. indexMap tracks, per index_, which driver and/or truck
+// record (if any) lives there — a shared index can hold one of each, exactly
+// like a spreadsheet row can.
 export function driversAndTrucksToRows(drivers, trucks) {
   const rows = [];
-  const indexMap = new Map(); // index_ -> { type: 'driver'|'truck', id }
+  const indexMap = new Map(); // index_ -> { driver?: { id }, truck?: { id } }
 
-  drivers.forEach((d) => {
-    const index_ = rows.length;
-    const row = new Array(ROW_WIDTH).fill(null);
-    row[DRIVER_COLS.NAME] = d.name ?? '';
-    row[DRIVER_COLS.COMPANY] = d.company ?? '';
-    row[DRIVER_COLS.STATUS] = d.status ?? '';
-    row[DRIVER_COLS.HIRE_DATE] = d.hire_date ?? '';
-    row[DRIVER_COLS.TENURE_DAYS] = d.tenure_days ?? '';
-    row[DRIVER_COLS.TERM_DATE] = d.term_date ?? '';
-    row[DRIVER_COLS.NOTES] = d.notes ?? '';
-    rows.push({ index_, row });
-    indexMap.set(index_, { type: 'driver', id: d.id });
-  });
+  for (let i = 0; i < LEADING_BLANK_ROWS; i++) {
+    rows.push({ index_: i, row: new Array(ROW_WIDTH).fill(null) });
+  }
 
-  trucks.forEach((t) => {
-    const index_ = rows.length;
+  const count = Math.max(drivers.length, trucks.length);
+  for (let i = 0; i < count; i++) {
+    const index_ = LEADING_BLANK_ROWS + i;
     const row = new Array(ROW_WIDTH).fill(null);
-    row[TRUCK_COLS.UNIT] = t.unit ?? '';
-    row[TRUCK_COLS.COMPANY] = t.company ?? '';
-    row[TRUCK_COLS.STATUS] = t.status ?? '';
-    row[TRUCK_COLS.STATUS_DATE] = t.status_date ?? '';
-    row[TRUCK_COLS.NOTES] = t.notes ?? '';
-    row[TRUCK_COLS.ASSIGNED_DRIVER] = t.assigned_driver ?? '';
+    const entry = {};
+
+    const d = drivers[i];
+    if (d) {
+      row[DRIVER_COLS.NAME] = d.name ?? '';
+      row[DRIVER_COLS.COMPANY] = d.company ?? '';
+      row[DRIVER_COLS.STATUS] = d.status ?? '';
+      row[DRIVER_COLS.HIRE_DATE] = d.hire_date ?? '';
+      row[DRIVER_COLS.TENURE_DAYS] = d.tenure_days ?? '';
+      row[DRIVER_COLS.TERM_DATE] = d.term_date ?? '';
+      row[DRIVER_COLS.NOTES] = d.notes ?? '';
+      entry.driver = { id: d.id };
+    }
+
+    const t = trucks[i];
+    if (t) {
+      row[TRUCK_COLS.UNIT] = t.unit ?? '';
+      row[TRUCK_COLS.COMPANY] = t.company ?? '';
+      row[TRUCK_COLS.STATUS] = t.status ?? '';
+      row[TRUCK_COLS.STATUS_DATE] = t.status_date ?? '';
+      row[TRUCK_COLS.NOTES] = t.notes ?? '';
+      row[TRUCK_COLS.ASSIGNED_DRIVER] = t.assigned_driver ?? '';
+      entry.truck = { id: t.id };
+    }
+
     rows.push({ index_, row });
-    indexMap.set(index_, { type: 'truck', id: t.id });
-  });
+    if (entry.driver || entry.truck) indexMap.set(index_, entry);
+  }
 
   return { rows, indexMap };
 }
