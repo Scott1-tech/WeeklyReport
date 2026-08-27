@@ -1731,7 +1731,7 @@ function FleetPulseDashboard({
       sparsePayload[DRIVER_COLS.NOTES] = formData.notes;
 
       updateItem(modalState.index_, sparsePayload);
-      addToast(`Updated driver ${cleanName} (Master Data saved successfully)`, 'success');
+      addToast(`Updated driver ${cleanName}`, 'success');
     } else {
       // Insert driver directly at Master Data!A6:G6 (row 6 / index 5) shifting ONLY A:G downward
       const INSERT_ROW_INDEX = 5;
@@ -1774,7 +1774,7 @@ function FleetPulseDashboard({
         insertItem(INSERT_ROW_INDEX, newRow);
       }
 
-      addToast(`Driver ${cleanName} saved successfully to Master Data!A6:G6 (Top Shuffled)`, 'success');
+      addToast(`Driver ${cleanName} added`, 'success');
     }
 
     setModalState({ isOpen: false, type: null, item: null, index_: null });
@@ -1805,7 +1805,7 @@ function FleetPulseDashboard({
       (t) => modalState.type !== 'editTruck' && String(t.unit).trim().toLowerCase() === cleanUnit.toLowerCase()
     );
     if (isDuplicateTruck && modalState.type !== 'editTruck') {
-      addToast(`Duplicate Warning: Truck Unit Number "${cleanUnit}" already exists in Master Data.`, 'error');
+      addToast(`Duplicate Warning: Truck Unit Number "${cleanUnit}" already exists.`, 'error');
       return;
     }
 
@@ -1819,7 +1819,7 @@ function FleetPulseDashboard({
       sparsePayload[TRUCK_COLS.NOTES] = formData.notes;
 
       updateItem(modalState.index_, sparsePayload);
-      addToast(`Updated truck unit ${cleanUnit} (Master Data saved successfully)`, 'success');
+      addToast(`Updated truck unit ${cleanUnit}`, 'success');
     } else {
       // Insert truck directly at Master Data!H6:L6 (row 6 / index 5) shifting ONLY H:L downward
       const INSERT_ROW_INDEX = 5;
@@ -1858,7 +1858,7 @@ function FleetPulseDashboard({
         insertItem(INSERT_ROW_INDEX, newRow);
       }
 
-      addToast(`Truck Unit ${cleanUnit} saved successfully to Master Data!H6:L6 (Top Shuffled)`, 'success');
+      addToast(`Truck Unit ${cleanUnit} added`, 'success');
     }
 
     setModalState({ isOpen: false, type: null, item: null, index_: null });
@@ -1867,7 +1867,7 @@ function FleetPulseDashboard({
   const handleDeleteItem = () => {
     if (modalState.index_ !== null) {
       deleteItem(modalState.index_, modalState.item?.entityType);
-      addToast('Row successfully deleted from sheet', 'info');
+      addToast('Record successfully deleted', 'info');
     }
     setModalState({ isOpen: false, type: null, item: null, index_: null });
   };
@@ -2688,7 +2688,7 @@ function FleetPulseDashboard({
                       </div>
                     </div>
                     <div className="mt-3 text-xs text-slate-500">
-                      <span>All units in master sheet</span>
+                      <span>All units in the database</span>
                     </div>
                   </div>
                 )}
@@ -3752,7 +3752,6 @@ function FleetPulseDashboard({
                     <th className="p-3 font-bold">Tenure &amp; Class</th>
                     <th className="p-3 font-bold">Term Date</th>
                     <th className="p-3 font-bold">Driver Notes</th>
-                    <th className="p-3 font-bold">Sheet Ref</th>
                     <th className="p-3 font-bold">Audit Flags</th>
                     <th className="p-3 font-bold text-right">Actions</th>
                   </tr>
@@ -3760,7 +3759,7 @@ function FleetPulseDashboard({
                 <tbody className="divide-y divide-stone-100">
                   {filteredDrivers.length === 0 ? (
                     <tr>
-                      <td colSpan="10" className="p-8 text-center text-slate-500 font-medium">
+                      <td colSpan="9" className="p-8 text-center text-slate-500 font-medium">
                         No drivers matching active filters.
                       </td>
                     </tr>
@@ -3831,9 +3830,6 @@ function FleetPulseDashboard({
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
-                          </td>
-                          <td className="p-3 font-mono text-[11px] text-slate-500">
-                            'Master Data'!A{d.rowIndexInSheet}:G{d.rowIndexInSheet}
                           </td>
                           <td className="p-3">
                             {flags.length > 0 ? (
@@ -3984,7 +3980,6 @@ function FleetPulseDashboard({
                     <th className="p-3 font-bold">Status</th>
                     <th className="p-3 font-bold">Status Date</th>
                     <th className="p-3 font-bold">Telematics / Notes</th>
-                    <th className="p-3 font-bold">Sheet Ref</th>
                     <th className="p-3 font-bold">Flags</th>
                     <th className="p-3 font-bold text-right">Actions</th>
                   </tr>
@@ -3992,7 +3987,7 @@ function FleetPulseDashboard({
                 <tbody className="divide-y divide-stone-100">
                   {filteredTrucks.length === 0 ? (
                     <tr>
-                      <td colSpan="8" className="p-8 text-center text-slate-500 font-medium">
+                      <td colSpan="7" className="p-8 text-center text-slate-500 font-medium">
                         No trucks matching active filters.
                       </td>
                     </tr>
@@ -4040,9 +4035,6 @@ function FleetPulseDashboard({
                           </td>
                           <td className="p-3 text-slate-600 max-w-xs truncate" title={t.notes}>
                             {t.notes || <span className="text-slate-400">—</span>}
-                          </td>
-                          <td className="p-3 font-mono text-[11px] text-slate-500">
-                            'Master Data'!H{t.rowIndexInSheet}:M{t.rowIndexInSheet}
                           </td>
                           <td className="p-3">
                             {flags.length > 0 ? (
@@ -4118,7 +4110,7 @@ function FleetPulseDashboard({
             <div>
               <h2 className="text-base font-bold text-slate-900">Carrier Registry &amp; Profiles</h2>
               <p className="text-xs text-[#617083]">
-                Managed operating authorities and dedicated sheet column mapping
+                Managed operating authorities and their live roster counts
               </p>
             </div>
 
@@ -4171,8 +4163,7 @@ function FleetPulseDashboard({
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-stone-200/60 flex items-center justify-between text-xs text-slate-500">
-                      <span>Sheet Section: {WEEKLY_TAB_COLS[comp.code] ? `Cols ${WEEKLY_TAB_COLS[comp.code].week}–${WEEKLY_TAB_COLS[comp.code].change}` : 'Overall Only'}</span>
+                    <div className="mt-4 pt-3 border-t border-stone-200/60 flex items-center justify-end text-xs text-slate-500">
                       <button
                         onClick={() => {
                           setSelectedCompanies([comp.code]);
@@ -4214,7 +4205,7 @@ function FleetPulseDashboard({
             {auditIssues.length === 0 ? (
               <div className="p-8 text-center bg-emerald-50 rounded-2xl border border-emerald-200/60 text-emerald-800">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-                <h3 className="font-bold text-sm">Clean Master Dataset</h3>
+                <h3 className="font-bold text-sm">Clean Dataset</h3>
                 <p className="text-xs mt-1 text-emerald-700">
                   No missing names, anomalous sentinels, or unverified carrier conflicts found.
                 </p>
