@@ -149,7 +149,13 @@ function toFieldPatch(patch, fieldByCol) {
   Object.entries(patch).forEach(([colStr, value]) => {
     const field = fieldByCol[Number(colStr)];
     if (!field) return;
-    if (value === null) {
+    // driversAndTrucksToRows renders a DB NULL date/number as '' (so the
+    // dashboard's own blank-check logic, e.g. `!d.termDate`, sees it as
+    // empty) — but a DATE/INTEGER column rejects '' outright. Any write
+    // that carries a blank date/number forward (which is most of them —
+    // nearly every driver has no term_date, most trucks no status_date)
+    // must send SQL NULL, not the empty string, or Postgres 500s on it.
+    if (value === null || (value === '' && NULLABLE_TYPED_FIELDS.has(field))) {
       fields[field] = NULLABLE_TYPED_FIELDS.has(field) ? null : '';
     } else if (field === 'tenure_days') {
       const n = Number(value);
