@@ -14,6 +14,12 @@
 // whatever today happens to be.
 export const SCHEDULE_START = '2026-06-01';
 
+// The schedule's first tracked week (June 1) is labeled "Week 23" rather
+// than "Week 1", so the numbering reads as weeks-of-the-year instead of
+// weeks-since-tracking-began — per request, since nothing before June 1 is
+// tracked anyway, there's no "Week 1" through "Week 22" to show.
+export const WEEK_LABEL_OFFSET = 22;
+
 function pad(n) {
   return String(n).padStart(2, '0');
 }

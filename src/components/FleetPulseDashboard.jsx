@@ -28,7 +28,7 @@ import {
   Clock,
   Sparkles
 } from 'lucide-react';
-import { SCHEDULE_START, getTodayStr, addDaysStr, weekNumberFor } from '../lib/dates';
+import { SCHEDULE_START, WEEK_LABEL_OFFSET, getTodayStr, addDaysStr, weekNumberFor } from '../lib/dates';
 import {
   COMPANIES,
   COMPANY_MAP,
@@ -116,7 +116,7 @@ function FleetPulseDashboard({
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Reporting bar controls
-  const [selectedWeekNum, setSelectedWeekNum] = useState(() => weekNumberFor(getTodayStr()));
+  const [selectedWeekNum, setSelectedWeekNum] = useState(() => weekNumberFor(getTodayStr()) + WEEK_LABEL_OFFSET);
   const [periodPreset, setPeriodPreset] = useState('1W'); // '1W', '4W', '8W', '12W', '26W', '52W', 'YTD', 'custom'
   const [customStartDate, setCustomStartDate] = useState(SCHEDULE_START);
   const [customEndDate, setCustomEndDate] = useState(() => getTodayStr());
@@ -133,7 +133,7 @@ function FleetPulseDashboard({
   const [turnoverCompany, setTurnoverCompany] = useState('ALL'); // 'ALL' | company code
   const [coverageChartMode, setCoverageChartMode] = useState('coveredEmpty'); // 'coveredEmpty' | 'threeLine'
   const [distributionView, setDistributionView] = useState('active'); // 'active' | 'hired' | 'terminated'
-  const [distributionWeekNum, setDistributionWeekNum] = useState(() => weekNumberFor(getTodayStr()));
+  const [distributionWeekNum, setDistributionWeekNum] = useState(() => weekNumberFor(getTodayStr()) + WEEK_LABEL_OFFSET);
   const [distributionPeriodPreset, setDistributionPeriodPreset] = useState('1W'); // '1W' | '4W' | '12W' | 'YTD'
   const [expandedCarrierList, setExpandedCarrierList] = useState({});
   const [tenureWindowDays, setTenureWindowDays] = useState(90);
@@ -350,12 +350,12 @@ function FleetPulseDashboard({
       const d2 = String(endD.getUTCDate()).padStart(2, '0');
       const endDate = `${y2}-${m2}-${d2}`;
 
-      const weekLabel = `Week ${w}`;
+      const weekLabel = `Week ${w + WEEK_LABEL_OFFSET}`;
       const status = startDate > TODAY_STR ? 'Future' : endDate < TODAY_STR ? 'Final' : 'In Progress';
       const isPopulated = startDate <= TODAY_STR;
 
       const weekObj = {
-        weekNum: w,
+        weekNum: w + WEEK_LABEL_OFFSET,
         weekLabel,
         startDate,
         endDate,
